@@ -1,21 +1,41 @@
-DECLARE
-
-    CURSOR loan_cursor IS
-    SELECT customer_id, loan_id, due_date
-    FROM loans
-    WHERE due_date BETWEEN SYSDATE AND SYSDATE + 30;
-
+CREATE OR REPLACE PROCEDURE TransferFunds
+(
+    p_from_account IN NUMBER,
+    p_to_account   IN NUMBER,
+    p_amount       IN NUMBER
+)
+IS
+    v_balance NUMBER;
 BEGIN
 
-    FOR loan_record IN loan_cursor LOOP
+    -- Get the balance of the source account
+    SELECT balance
+    INTO v_balance
+    FROM accounts
+    WHERE account_id = p_from_account;
 
-        DBMS_OUTPUT.PUT_LINE(
-            'Reminder: Customer ID ' || loan_record.customer_id ||
-            ' has Loan ID ' || loan_record.loan_id ||
-            ' due on ' || loan_record.due_date
-        );
+    -- Check if sufficient balance is available
+    IF v_balance >= p_amount THEN
 
-    END LOOP;
+        -- Deduct amount from source account
+        UPDATE accounts
+        SET balance = balance - p_amount
+        WHERE account_id = p_from_account;
+
+        -- Add amount to destination account
+        UPDATE accounts
+        SET balance = balance + p_amount
+        WHERE account_id = p_to_account;
+
+        COMMIT;
+
+        DBMS_OUTPUT.PUT_LINE('Amount transferred successfully.');
+
+    ELSE
+
+        DBMS_OUTPUT.PUT_LINE('Insufficient balance.');
+
+    END IF;
 
 END;
 /

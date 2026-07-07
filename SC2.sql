@@ -1,26 +1,18 @@
-DECLARE
-
-    CURSOR customer_cursor IS
-    SELECT customer_id, balance
-    FROM customers;
-
+CREATE OR REPLACE PROCEDURE UpdateEmployeeBonus
+(
+    p_department IN VARCHAR2,
+    p_bonus      IN NUMBER
+)
+IS
 BEGIN
 
-    FOR customer_record IN customer_cursor LOOP
-
-        IF customer_record.balance > 10000 THEN
-
-            UPDATE customers
-            SET IsVIP = 'TRUE'
-            WHERE customer_id = customer_record.customer_id;
-
-        END IF;
-
-    END LOOP;
+    UPDATE employees
+    SET salary = salary + (salary * p_bonus / 100)
+    WHERE department = p_department;
 
     COMMIT;
 
-    DBMS_OUTPUT.PUT_LINE('VIP status updated successfully.');
+    DBMS_OUTPUT.PUT_LINE('Employee bonus updated successfully.');
 
 END;
 /
